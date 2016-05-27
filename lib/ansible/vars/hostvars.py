@@ -69,7 +69,7 @@ class HostVars(collections.Mapping):
         if host is None:
             raise j2undefined
 
-        data = self._variable_manager.get_vars(loader=self._loader, host=host, include_hostvars=False)
+        data = self._variable_manager.get_vars(loader=self._loader, host=host, include_hostvars=False).to_dict()
 
         sha1_hash = sha1(str(data).encode('utf-8')).hexdigest()
         if sha1_hash in self._cached_result:

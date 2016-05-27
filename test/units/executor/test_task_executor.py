@@ -26,6 +26,7 @@ from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.executor.task_executor import TaskExecutor
 from ansible.playbook.play_context import PlayContext
 from ansible.plugins import action_loader, lookup_loader
+from ansible.vars.chain_map import AnsibleChainMap
 
 from units.mock.loader import DictDataLoader
 
@@ -44,7 +45,7 @@ class TestTaskExecutor(unittest.TestCase):
         mock_play_context = MagicMock()
         mock_shared_loader = MagicMock()
         new_stdin = None
-        job_vars = dict()
+        job_vars = AnsibleChainMap()
         mock_queue = MagicMock()
         te = TaskExecutor(
             host = mock_host,
@@ -71,7 +72,7 @@ class TestTaskExecutor(unittest.TestCase):
         mock_queue = MagicMock()
 
         new_stdin = None
-        job_vars = dict()
+        job_vars = AnsibleChainMap()
 
         te = TaskExecutor(
             host = mock_host,
@@ -114,7 +115,7 @@ class TestTaskExecutor(unittest.TestCase):
         mock_shared_loader.lookup_loader = lookup_loader
 
         new_stdin = None
-        job_vars = dict()
+        job_vars = AnsibleChainMap()
         mock_queue = MagicMock()
 
         te = TaskExecutor(
@@ -151,7 +152,7 @@ class TestTaskExecutor(unittest.TestCase):
         mock_queue = MagicMock()
 
         new_stdin = None
-        job_vars = dict()
+        job_vars = AnsibleChainMap()
 
         te = TaskExecutor(
             host = mock_host,
@@ -197,7 +198,8 @@ class TestTaskExecutor(unittest.TestCase):
         mock_queue = MagicMock()
 
         new_stdin = None
-        job_vars = dict(pkg_mgr='yum')
+        job_vars = AnsibleChainMap()
+        job_vars.push(dict(pkg_mgr='yum'))
 
         te = TaskExecutor(
             host = mock_host,
@@ -246,7 +248,8 @@ class TestTaskExecutor(unittest.TestCase):
         # an error later.  If so, we can throw it now instead.
         # Squashing in this case would not be intuitive as the user is being
         # explicit in using each list entry as a key.  
-        job_vars = dict(pkg_mgr='yum', packages={ "a": "foo", "b": "bar", "foo": "baz", "bar": "quux" })
+        job_vars = AnsibleChainMap()
+        job_vars.push(dict(pkg_mgr='yum', packages={ "a": "foo", "b": "bar", "foo": "baz", "bar": "quux" }))
         items = [['a', 'b'], ['foo', 'bar']]
         mock_task.action = 'yum'
         mock_task.args = {'name': '{{ packages[item] }}'}
@@ -283,7 +286,8 @@ class TestTaskExecutor(unittest.TestCase):
         #
 
         # Squashing lists
-        job_vars = dict(pkg_mgr='yum')
+        job_vars = AnsibleChainMap()
+        job_vars.push(dict(pkg_mgr='yum'))
         items = [['a', 'b'], ['foo', 'bar']]
         mock_task.action = 'yum'
         mock_task.args = {'name': '{{ item }}'}
@@ -300,7 +304,8 @@ class TestTaskExecutor(unittest.TestCase):
         self.assertEqual(new_items, items)
 
         # Another way to retrieve from a dict
-        job_vars = dict(pkg_mgr='yum')
+        job_vars.pop()
+        job_vars.push(dict(pkg_mgr='yum'))
         items = [{'package': 'foo'}, {'package': 'bar'}]
         mock_task.action = 'yum'
         mock_task.args = {'name': '{{ item["package"] }}'}
@@ -328,7 +333,8 @@ class TestTaskExecutor(unittest.TestCase):
         #        dict(name='c', state='absent')])
 
         # Could do something like this to recover from bad deps in a package
-        job_vars = dict(pkg_mgr='yum', packages=['a', 'b'])
+        job_vars.pop()
+        job_vars.push(dict(pkg_mgr='yum', packages=['a', 'b']))
         items = [ 'absent', 'latest' ]
         mock_task.action = 'yum'
         mock_task.args = {'name': '{{ packages }}', 'state': '{{ item }}'}
@@ -369,7 +375,8 @@ class TestTaskExecutor(unittest.TestCase):
 
         shared_loader = None
         new_stdin = None
-        job_vars = dict(omit="XXXXXXXXXXXXXXXXXXX")
+        job_vars = AnsibleChainMap()
+        job_vars.push(dict(omit="XXXXXXXXXXXXXXXXXXX"))
 
         te = TaskExecutor(
             host = mock_host,
@@ -424,7 +431,8 @@ class TestTaskExecutor(unittest.TestCase):
         shared_loader.action_loader = action_loader
 
         new_stdin = None
-        job_vars = dict(omit="XXXXXXXXXXXXXXXXXXX")
+        job_vars = AnsibleChainMap()
+        job_vars.push(dict(omit="XXXXXXXXXXXXXXXXXXX"))
 
         te = TaskExecutor(
             host = mock_host,

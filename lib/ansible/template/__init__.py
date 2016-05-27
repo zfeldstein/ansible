@@ -25,6 +25,7 @@ import os
 import re
 
 from io import StringIO
+from collections import MutableMapping
 
 from ansible.compat.six import string_types, text_type, binary_type
 from jinja2 import Environment
@@ -273,7 +274,7 @@ class Templar:
         are being changed.
         '''
 
-        assert isinstance(variables, dict)
+        assert isinstance(variables, MutableMapping)
         self._available_variables = variables
         self._cached_result       = {}
 
